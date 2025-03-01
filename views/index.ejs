@@ -6,16 +6,30 @@
     <title>Online Clipboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-      <h1 class="text-2xl font-bold text-center text-blue-600">
+  <body
+    class="bg-gray-900 flex flex-col items-center justify-center text-white"
+  >
+    <!-- Navbar -->
+    <nav
+      class="w-full bg-gray-800 p-4 flex justify-between items-center shadow-md"
+    >
+      <h1 class="text-white text-xl font-bold">Clipboard</h1>
+      <div class="flex items-center gap-4">
+        <a href="#" class="text-white hover:underline">Home</a>
+        <a href="#" class="text-white hover:underline">About</a>
+        <a href="#" class="text-white hover:underline">Contact</a>
+      </div>
+    </nav>
+
+    <div class="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-md mt-6">
+      <h1 class="text-2xl font-bold text-center text-blue-400">
         Online Clipboard
       </h1>
 
       <!-- Display Message (Success or Error) -->
       <% if (message) { %>
       <p
-        class="<%= messageType === 'success' ? 'text-green-600' : 'text-red-600' %> font-semibold text-center my-2"
+        class="<%= messageType === 'success' ? 'text-green-400' : 'text-red-400' %> font-semibold text-center my-2"
       >
         <%= message %>
       </p>
@@ -23,10 +37,9 @@
 
       <!-- Form to Save Text -->
       <form id="saveForm" action="/save" method="POST" class="mt-4">
-        <!-- Save Text Form -->
         <textarea
           name="text"
-          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 h-40"
+          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 h-40 bg-gray-700 text-white"
           placeholder="Paste your text here..."
           required
         ></textarea>
@@ -43,17 +56,17 @@
         </button>
       </form>
 
-      <hr class="my-4" />
+      <hr class="my-4 border-gray-600" />
 
       <!-- Retrieve Section -->
-      <h2 class="text-lg font-semibold text-gray-700 text-center">
+      <h2 class="text-lg font-semibold text-white text-center">
         Retrieve Data
       </h2>
       <% if (retrievedText) { %>
-      <p class="mt-2 text-gray-700 font-medium">Retrieved Data:</p>
+      <p class="mt-2 text-white font-medium">Retrieved Data:</p>
       <textarea
         id="retrievedText"
-        class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 h-40"
+        class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 h-40 bg-gray-700 text-white"
         readonly
       >
 <%= retrievedText %></textarea
@@ -65,7 +78,7 @@
       >
         Copy to Clipboard
       </button>
-      <p id="copyMessage" class="text-green-600 text-center mt-2 hidden">
+      <p id="copyMessage" class="text-green-400 text-center mt-2 hidden">
         Copied!
       </p>
       <% } %>
@@ -75,7 +88,7 @@
         <input
           type="text"
           name="code"
-          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-700 text-white"
           placeholder="Enter 4-digit code"
           required
         />
