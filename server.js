@@ -2,9 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require("path");
-const Clipboard = require("./models/Clipboard");
 const cron = require("node-cron");
 require("dotenv").config();
+
+const textRoutes = require("./routes/textRoutes");
+const Clipboard = require("./models/Clipboard");
 
 const app = express();
 
@@ -20,73 +22,16 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Generate Unique 4-digit Code
-const generateUniqueCode = async () => {
-  let code;
-  let exists = true;
+// Use Routes
+app.use("/", textRoutes);
 
-  while (exists) {
-    code = Math.floor(1000 + Math.random() * 9000).toString();
-    exists = await Clipboard.exists({ code });
-  }
-
-  return code;
-};
-
-// Routes
-app.get("/", (req, res) => {
-  res.render("index", {
-    message: null,
-    messageType: null,
-    retrievedText: null,
-  });
-});
-
-app.post("/save", async (req, res) => {
-  const { text } = req.body;
-  if (text) {
-    const code = await generateUniqueCode(); // Ensure unique code
-    await Clipboard.create({ text, code });
-    res.render("index", {
-      message: `Your code: ${code}`,
-      messageType: "success",
-      retrievedText: null,
-    });
-  } else {
-    res.render("index", {
-      message: "Error: No text provided!",
-      messageType: "error",
-      retrievedText: null,
-    });
-  }
-});
-
-app.post("/retrieve", async (req, res) => {
-  const { code } = req.body;
-  const clip = await Clipboard.findOne({ code });
-
-  if (clip) {
-    res.render("index", {
-      message: null,
-      messageType: null,
-      retrievedText: clip.text,
-    });
-  } else {
-    res.render("index", {
-      message: "Invalid Code or Expired Data!",
-      messageType: "error",
-      retrievedText: null,
-    });
-  }
-});
-
-// Automatically delete data after 10 minutes
+// Automatically delete old clipboard data every 10 minutes
 cron.schedule("*/1 * * * *", async () => {
   const expirationTime = new Date(Date.now() - 10 * 60 * 1000);
   await Clipboard.deleteMany({ createdAt: { $lt: expirationTime } });
-  console.log("Old data deleted");
+  // console.log("Old clipboard data deleted");
 });
 
-
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
