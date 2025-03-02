@@ -79,7 +79,7 @@ router.post("/retrieve-image", async (req, res) => {
 
     if (!imageData) {
       return res.render("image", {
-        message: "Invalid Code or Image Expired.",
+        message: "InValid Code or Image Expired.",
         messageType: "error",
         imageCode: null,
         retrievedImage: null,
