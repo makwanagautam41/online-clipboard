@@ -18,7 +18,7 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log("Database Connection Error:", err));
 
-// Middleware
+// Middleware temp
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
