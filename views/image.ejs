@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Online Clipboard</title>
+    <title>Online Clipboard - Images</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body
@@ -15,14 +15,14 @@
     >
       <h1 class="text-white text-xl font-bold">Clipboard</h1>
       <div class="flex items-center gap-4">
-        <a href="#" class="text-blue-400 hover:underline">Text</a>
-        <a href="/image" class="text-white hover:underline">Image</a>
+        <a href="/" class="text-white hover:underline">Text</a>
+        <a href="/image" class="text-blue-400 hover:underline">Image</a>
       </div>
     </nav>
 
     <div class="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-md mt-6">
       <h1 class="text-2xl font-bold text-center text-blue-400">
-        Online Clipboard
+        Image Clipboard
       </h1>
 
       <!-- Display Message (Success or Error) -->
@@ -34,22 +34,29 @@
       </p>
       <% } %>
 
-      <!-- Form to Save Text -->
-      <form id="saveForm" action="/save" method="POST" class="mt-4">
-        <textarea
-          name="text"
-          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 h-40 bg-gray-700 text-white resize-none"
-          placeholder="Paste your text here..."
+      <!-- Form to Upload Image -->
+      <form
+        id="uploadForm"
+        action="/upload-image"
+        method="POST"
+        enctype="multipart/form-data"
+        class="mt-4"
+      >
+        <input
+          type="file"
+          name="image"
+          accept="image/*"
           required
-        ></textarea>
+          class="w-full p-2 border rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
 
         <button
           type="submit"
           class="w-full mt-3 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition flex justify-center items-center"
         >
-          Generate Code
+          Upload Image
           <span
-            id="saveLoader"
+            id="uploadLoader"
             class="hidden ml-2 h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"
           ></span>
         </button>
@@ -59,35 +66,37 @@
 
       <!-- Retrieve Section -->
       <h2 class="text-lg font-semibold text-white text-center">
-        Retrieve Data
+        Retrieve Image
       </h2>
 
-      <% if (retrievedText) { %>
-      <p class="mt-2 text-white font-medium">Retrieved Data:</p>
-      <textarea
-        id="retrievedText"
-        class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 h-40 bg-gray-700 text-white resize-none"
-        readonly
-      >
-<%= retrievedText %></textarea
-      >
-
-      <!-- Copy to Clipboard Button -->
+      <!-- Show Retrieved Image -->
+      <% if (retrievedImage) { %>
+      <p class="mt-2 text-white font-medium">Retrieved Image:</p>
       <div class="flex flex-col items-center">
-        <button
-          onclick="copyToClipboard()"
-          class="w-full mt-2 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition"
+        <img
+          src="<%= retrievedImage.imageUrl %>"
+          alt="Retrieved Image"
+          class="w-48 h-auto mt-2 rounded-md shadow-lg border border-gray-600"
+        />
+
+        <!-- Download Button -->
+        <a
+          href="<%= retrievedImage.imageUrl %>"
+          download="Clipboard-Image"
+          class="mt-3 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition flex items-center"
         >
-          Copy to Clipboard
-        </button>
-        <p id="copyMessage" class="text-green-400 text-center mt-2 hidden">
-          Copied!
-        </p>
+          Download Image
+        </a>
       </div>
       <% } %>
 
-      <!-- Form to Retrieve Text -->
-      <form id="retrieveForm" action="/retrieve" method="POST" class="mt-4">
+      <!-- Form to Retrieve Image -->
+      <form
+        id="retrieveForm"
+        action="/retrieve-image"
+        method="POST"
+        class="mt-4"
+      >
         <input
           type="text"
           name="code"
@@ -100,7 +109,7 @@
           type="submit"
           class="w-full mt-3 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition flex justify-center items-center"
         >
-          Retrieve
+          Retrieve Image
           <span
             id="retrieveLoader"
             class="hidden ml-2 h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"
@@ -110,21 +119,10 @@
     </div>
 
     <script>
-      function copyToClipboard() {
-        const textArea = document.getElementById("retrievedText");
-        textArea.select();
-        document.execCommand("copy");
-
-        document.getElementById("copyMessage").classList.remove("hidden");
-        setTimeout(() => {
-          document.getElementById("copyMessage").classList.add("hidden");
-        }, 3000);
-      }
-
       document
-        .getElementById("saveForm")
+        .getElementById("uploadForm")
         .addEventListener("submit", function () {
-          document.getElementById("saveLoader").classList.remove("hidden");
+          document.getElementById("uploadLoader").classList.remove("hidden");
         });
 
       document
