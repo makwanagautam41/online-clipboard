@@ -3,9 +3,9 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: {
-    folder: "clipboard_uploads", // Folder name in Cloudinary
+    folder: "clipboard_uploads",
     allowed_formats: ["jpg", "jpeg", "png", "gif"],
   },
 });
