@@ -32,7 +32,7 @@ app.use("/api", textRoutes);
 app.use("/api", imageRoutes);
 
 // 404 Route Handler (For Undefined Routes)
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ error: "Route Not Found" });
 });
 
@@ -55,8 +55,5 @@ cron.schedule("*/10 * * * *", async () => {
   }
 });
 
-// Start Server
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT} [http://localhost:${PORT}]`)
-);
+// Export app for Vercel
+module.exports = app;
