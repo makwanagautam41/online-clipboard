@@ -8,8 +8,8 @@ require("dotenv").config();
 const textRoutes = require("./routes/textRoutes");
 const imageRoutes = require("./routes/imageRoutes");
 const ExpiredImages = require("./models/ExpiredImages");
-const ImageClipboard = require("./models/ImageClipboard"); // ✅ Import ImageClipboard
-const Clipboard = require("./models/Clipboard"); // ✅ Import Clipboard
+const ImageClipboard = require("./models/ImageClipboard");
+const Clipboard = require("./models/Clipboard");
 
 const app = express();
 
@@ -25,28 +25,30 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
 app.use("/api", textRoutes);
 app.use("/api", imageRoutes);
 
-// Automatically move expired images and delete from active storage every 10 minutes
+// 404 Route Handler (For Undefined Routes)
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Route Not Found" });
+});
+
+// Cron job to delete expired clipboard data
 cron.schedule("*/10 * * * *", async () => {
   const expirationTime = new Date(Date.now() - 10 * 60 * 1000);
-
   try {
-    // Move expired images to ExpiredImages collection before deletion
     const expiredImages = await ImageClipboard.find({
       createdAt: { $lt: expirationTime },
     });
-
     if (expiredImages.length > 0) {
-      await ExpiredImages.insertMany(expiredImages); // Store expired images permanently
+      await ExpiredImages.insertMany(expiredImages);
       console.log(`${expiredImages.length} images moved to ExpiredImages.`);
     }
-
-    // Delete expired data from ImageClipboard and Clipboard collections
     await ImageClipboard.deleteMany({ createdAt: { $lt: expirationTime } });
     await Clipboard.deleteMany({ createdAt: { $lt: expirationTime } });
-
     console.log("Expired clipboard text and active images deleted.");
   } catch (error) {
     console.error("Error in cron job:", error);
@@ -55,4 +57,6 @@ cron.schedule("*/10 * * * *", async () => {
 
 // Start Server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT} [http://localhost:${PORT}]`)
+);
