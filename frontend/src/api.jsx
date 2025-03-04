@@ -3,7 +3,6 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const saveText = async (text) => {
-  console.log(text);
   const response = await axios.post(`${API_URL}/save-text`, { text });
   return response.data;
 };
