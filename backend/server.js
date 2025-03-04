@@ -57,8 +57,3 @@ cron.schedule("*/10 * * * *", async () => {
 
 // Export app for Vercel
 module.exports = app;
-
-// const PORT = process.env.PORT || 4000;
-// app.listen(PORT, () =>
-//   console.log(`Server running on port ${PORT} [http://localhost:${PORT}]`)
-// );
