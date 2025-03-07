@@ -30,8 +30,6 @@ app.get("/", (req, res) => {
 });
 app.use("/api", textRoutes);
 app.use("/api", imageRoutes);
-
-// 404 Route Handler (For Undefined Routes)
 app.use((req, res) => {
   res.status(404).json({ error: "Route Not Found" });
 });
@@ -43,13 +41,31 @@ cron.schedule("*/10 * * * *", async () => {
     const expiredImages = await ImageClipboard.find({
       createdAt: { $lt: expirationTime },
     });
+
+    for (const image of expiredImages) {
+      const publicId = image.imageUrl.split("/").pop().split(".")[0];
+
+      // Delete from Cloudinary
+      try {
+        await cloudinary.uploader.destroy(`clipboard_uploads/${publicId}`);
+        console.log(`Deleted from Cloudinary: ${publicId}`);
+      } catch (cloudinaryError) {
+        console.error(
+          `Cloudinary deletion error for ${publicId}:`,
+          cloudinaryError
+        );
+      }
+    }
+
+    // Move expired images to ExpiredImages collection
     if (expiredImages.length > 0) {
       await ExpiredImages.insertMany(expiredImages);
-      console.log(`${expiredImages.length} images moved to ExpiredImages.`);
+      //console.log(`${expiredImages.length} images moved to ExpiredImages.`);
     }
+
     await ImageClipboard.deleteMany({ createdAt: { $lt: expirationTime } });
     await Clipboard.deleteMany({ createdAt: { $lt: expirationTime } });
-    console.log("Expired clipboard text and active images deleted.");
+    console.log("Expired clipboard text and images deleted.");
   } catch (error) {
     console.error("Error in cron job:", error);
   }
