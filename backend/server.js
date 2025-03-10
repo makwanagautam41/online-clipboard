@@ -36,6 +36,7 @@ app.use((req, res) => {
 
 // Cron job to delete expired clipboard data
 cron.schedule("*/10 * * * *", async () => {
+  const cloudinary = require("./config/cloudinary");
   const expirationTime = new Date(Date.now() - 10 * 60 * 1000);
   try {
     const expiredImages = await ImageClipboard.find({

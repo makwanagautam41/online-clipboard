@@ -35,7 +35,7 @@ const ExpiredImages = () => {
   }, []);
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
+    <div style={{ textAlign: "center", padding: "20px", color:"#fff" }}>
       <h2>Expired Images</h2>
 
       {images.length > 0 && (
