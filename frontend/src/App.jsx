@@ -4,6 +4,7 @@ import "./App.css";
 import TextPage from "./pages/TextPage";
 import ImagePage from "./pages/ImagePage";
 import Navbar from "./components/Navbar";
+import ExpiredImages from "./pages/ExpiredImages";
 
 const App = () => (
   <ClipboardProvider>
@@ -12,6 +13,7 @@ const App = () => (
       <Routes>
         <Route path="/" element={<TextPage />} />
         <Route path="/image" element={<ImagePage />} />
+        <Route path="/expired-images" element={<ExpiredImages />} />
       </Routes>
     </Router>
   </ClipboardProvider>

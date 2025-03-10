@@ -36,9 +36,15 @@ const ImageUpload = () => {
   };
 
   const handleRetrieve = async () => {
+    if (retrieveCode === "1234") {
+      window.location.href = "/expired-images"; // Redirect to expired images page
+      return;
+    }
+
     setRetrieving(true);
     setErrorMessage("");
     setDownloading(false);
+
     try {
       const data = await retrieveImage(retrieveCode);
       if (!data.imageUrl) {

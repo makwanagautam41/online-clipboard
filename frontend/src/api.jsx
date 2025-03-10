@@ -23,3 +23,12 @@ export const retrieveImage = async (code) => {
   const response = await axios.get(`${API_URL}/retrieve-image/${code}`);
   return response.data;
 };
+
+export const retrieveExpiredImages = async () => {
+  const response = await axios.get(`${API_URL}/expired-images`);
+  return response.data.expiredImages;
+};
+
+export const deleteAllExpiredImages = async () => {
+  await axios.delete(`${API_URL}/expired-images/delete-all`);
+};
