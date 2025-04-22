@@ -1,5 +1,6 @@
 const express = require("express");
 const Clipboard = require("../models/Clipboard");
+const See = require("../models/See.js");
 const router = express.Router();
 
 // Ensure index on code for faster queries
@@ -42,5 +43,23 @@ router.get("/retrieve-text/:code", async (req, res) => {
 
   res.json({ text: clip.text });
 });
+
+router.post("/save-long-data", async(req,res)=>{
+  const {text, label} = req.body;
+  if(!text && !label) return res.status(400).json({error:"Text or Label required"});
+
+  See.create({text,label})
+    .then(()=> res.json({message:"Text Saved Successfully"}))
+    .catch(()=> res.json(500).json({error:"Failed to save text"}))
+})
+
+router.get("/get-long-data", async(req,res)=>{
+  const {label} = req.body;
+  const data = await See.findOne({label}).lean();
+
+  if(!label) return res.status(404).json({error:"Invalid Request"});
+
+  res.json({data: data.text});
+})
 
 module.exports = router;
