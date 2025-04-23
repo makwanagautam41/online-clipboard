@@ -54,19 +54,25 @@ router.post("/save-long-data", async(req,res)=>{
 })
 
 router.get("/get-long-data", async (req, res) => {
-  const { label } = req.query; 
+  const { label } = req.query;
 
   if (!label) {
     return res.status(400).json({ error: "Label is required" });
   }
 
   try {
-    const data = await See.findOne({ label }).lean();
-    res.json({ data: data?.text || "No data found" });
+    const data = await See.findOne({ label }).select('text').lean();
+
+    if (!data) {
+      return res.status(404).json({ error: "No data found" });
+    }
+
+    return res.json({ data: data.text });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch data" });
+    return res.status(500).json({ error: "Failed to fetch data" });
   }
 });
+
 
 
 module.exports = router;
