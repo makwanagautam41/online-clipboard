@@ -37,7 +37,7 @@ router.post("/save-text", async (req, res) => {
 // Retrieve Clipboard Text
 router.get("/retrieve-text/:code", async (req, res) => {
   const { code } = req.params;
-  const clip = await Clipboard.findOne({ code }).lean(); // Faster query
+  const clip = await Clipboard.findOne({ code }).lean(); 
 
   if (!clip) return res.status(404).json({ error: "Invalid or expired code" });
 
