@@ -12,6 +12,7 @@ const ImageClipboard = require("./models/ImageClipboard");
 const Clipboard = require("./models/Clipboard");
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Database Connection
 mongoose
@@ -21,15 +22,17 @@ mongoose
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// API Routes
+// Routes
 app.get("/", (req, res) => {
   res.send("Server is running!");
 });
+
 app.use("/api", textRoutes);
 app.use("/api", imageRoutes);
+
 app.use((req, res) => {
   res.status(404).json({ error: "Route Not Found" });
 });
@@ -38,6 +41,7 @@ app.use((req, res) => {
 cron.schedule("*/10 * * * *", async () => {
   const cloudinary = require("./config/cloudinary");
   const expirationTime = new Date(Date.now() - 10 * 60 * 1000);
+
   try {
     const expiredImages = await ImageClipboard.find({
       createdAt: { $lt: expirationTime },
@@ -46,31 +50,28 @@ cron.schedule("*/10 * * * *", async () => {
     for (const image of expiredImages) {
       const publicId = image.imageUrl.split("/").pop().split(".")[0];
 
-      // Delete from Cloudinary
       try {
         await cloudinary.uploader.destroy(`clipboard_uploads/${publicId}`);
         console.log(`Deleted from Cloudinary: ${publicId}`);
-      } catch (cloudinaryError) {
-        console.error(
-          `Cloudinary deletion error for ${publicId}:`,
-          cloudinaryError
-        );
+      } catch (err) {
+        console.error(`Cloudinary deletion error for ${publicId}`, err);
       }
     }
 
-    // Move expired images to ExpiredImages collection
     if (expiredImages.length > 0) {
       await ExpiredImages.insertMany(expiredImages);
-      //console.log(`${expiredImages.length} images moved to ExpiredImages.`);
     }
 
     await ImageClipboard.deleteMany({ createdAt: { $lt: expirationTime } });
     await Clipboard.deleteMany({ createdAt: { $lt: expirationTime } });
+
     console.log("Expired clipboard text and images deleted.");
   } catch (error) {
-    console.error("Error in cron job:", error);
+    console.error("Cron job error:", error);
   }
 });
 
-// Export app for Vercel
-module.exports = app;
+// Start server (VPS / Docker / PM2)
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
