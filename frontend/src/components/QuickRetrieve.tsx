@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Loader2, Copy, Check, AlertCircle } from 'lucide-react';
+import { Search, Loader2, Copy, Check, AlertCircle, Download } from 'lucide-react';
 import { retrieveText, retrieveImage } from '@/services/api';
 import { ToastData } from './Toast';
 
@@ -103,6 +103,26 @@ export const QuickRetrieve = ({ onToast }: QuickRetrieveProps) => {
     }
   };
 
+  const handleDownloadImage = async () => {
+    if (!result || result.type !== 'image') return;
+
+    try {
+      const response = await fetch(result.content);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `mg-image-${fullCode}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      onToast({ type: 'success', message: 'Image downloaded successfully!' });
+    } catch {
+      onToast({ type: 'error', message: 'Failed to download image' });
+    }
+  };
+
   const handleReset = () => {
     setCode(['', '', '', '']);
     setResult(null);
@@ -182,7 +202,7 @@ export const QuickRetrieve = ({ onToast }: QuickRetrieveProps) => {
               <span className="text-xs text-muted-foreground">
                 {result.type === 'text' ? 'Shared Text' : 'Shared Image'}
               </span>
-              {result.type === 'text' && (
+              {result.type === 'text' ? (
                 <button
                   onClick={handleCopyContent}
                   className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 transition-colors duration-150"
@@ -198,6 +218,14 @@ export const QuickRetrieve = ({ onToast }: QuickRetrieveProps) => {
                       Copy
                     </>
                   )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleDownloadImage}
+                  className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 transition-colors duration-150"
+                >
+                  <Download className="w-3 h-3" />
+                  Download
                 </button>
               )}
             </div>
