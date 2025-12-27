@@ -130,7 +130,7 @@ export const QuickRetrieve = ({ onToast }: QuickRetrieveProps) => {
   };
 
   return (
-    <div className="mt-8 border-t border-border pt-6">
+    <div className="mt-4 border-t border-border pt-6">
       <div className="flex items-center gap-2 text-sm font-medium mb-4">
         <Search className="w-4 h-4" />
         <span>Retrieve Content</span>

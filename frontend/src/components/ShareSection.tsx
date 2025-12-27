@@ -1,18 +1,25 @@
-import { useState, useRef } from 'react';
-import { Copy, Upload, FileText, Image as ImageIcon, Check, Loader2 } from 'lucide-react';
-import { saveText, uploadImage } from '@/services/api';
-import { ToastData } from './Toast';
-import { QuickRetrieve } from './QuickRetrieve';
+import { useState, useRef } from "react";
+import {
+  Copy,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  Check,
+  Loader2,
+} from "lucide-react";
+import { saveText, uploadImage } from "@/services/api";
+import { ToastData } from "./Toast";
+import { QuickRetrieve } from "./QuickRetrieve";
 
-type TabType = 'text' | 'image';
+type TabType = "text" | "image";
 
 interface ShareSectionProps {
-  onToast: (toast: Omit<ToastData, 'id'>) => void;
+  onToast: (toast: Omit<ToastData, "id">) => void;
 }
 
 export const ShareSection = ({ onToast }: ShareSectionProps) => {
-  const [activeTab, setActiveTab] = useState<TabType>('text');
-  const [textContent, setTextContent] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>("text");
+  const [textContent, setTextContent] = useState("");
   const [imageContent, setImageContent] = useState<string | null>(null);
   const [imageName, setImageName] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -21,19 +28,20 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isSubmitDisabled = activeTab === 'text' ? !textContent.trim() : !imageContent;
+  const isSubmitDisabled =
+    activeTab === "text" ? !textContent.trim() : !imageContent;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      onToast({ type: 'error', message: 'Please select an image file' });
+    if (!file.type.startsWith("image/")) {
+      onToast({ type: "error", message: "Please select an image file" });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      onToast({ type: 'error', message: 'Image must be less than 5MB' });
+      onToast({ type: "error", message: "Image must be less than 5MB" });
       return;
     }
 
@@ -53,20 +61,23 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
     try {
       let code: string;
 
-      if (activeTab === 'text') {
+      if (activeTab === "text") {
         code = await saveText(textContent);
       } else {
         if (!imageFile) {
-          throw new Error('No image file selected');
+          throw new Error("No image file selected");
         }
         const result = await uploadImage(imageFile);
         code = result.code;
       }
 
       setGeneratedCode(code);
-      onToast({ type: 'success', message: 'Content shared successfully!' });
+      onToast({ type: "success", message: "Content shared successfully!" });
     } catch (error) {
-      onToast({ type: 'error', message: 'Failed to share content. Please try again.' });
+      onToast({
+        type: "error",
+        message: "Failed to share content. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -78,20 +89,20 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
     try {
       await navigator.clipboard.writeText(generatedCode);
       setIsCopied(true);
-      onToast({ type: 'success', message: 'Code copied to clipboard' });
+      onToast({ type: "success", message: "Code copied to clipboard" });
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
-      onToast({ type: 'error', message: 'Failed to copy code' });
+      onToast({ type: "error", message: "Failed to copy code" });
     }
   };
 
   const handleReset = () => {
-    setTextContent('');
+    setTextContent("");
     setImageContent(null);
     setImageName(null);
     setImageFile(null);
     setGeneratedCode(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -105,15 +116,16 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
       <div className="flex gap-1 p-1 bg-muted rounded-lg mb-6">
         <button
           onClick={() => {
-            setActiveTab('text');
+            setActiveTab("text");
             setGeneratedCode(null);
           }}
           className={`
             flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md
             text-sm font-medium transition-all duration-150
-            ${activeTab === 'text'
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
+            ${
+              activeTab === "text"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }
           `}
         >
@@ -122,15 +134,16 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
         </button>
         <button
           onClick={() => {
-            setActiveTab('image');
+            setActiveTab("image");
             setGeneratedCode(null);
           }}
           className={`
             flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md
             text-sm font-medium transition-all duration-150
-            ${activeTab === 'image'
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
+            ${
+              activeTab === "image"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }
           `}
         >
@@ -141,7 +154,7 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
 
       {/* Content Area */}
       <div className="bg-card rounded-xl border border-border p-5 mb-6">
-        {activeTab === 'text' ? (
+        {activeTab === "text" ? (
           <textarea
             value={textContent}
             onChange={(e) => setTextContent(e.target.value)}
@@ -173,7 +186,7 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
                     onClick={() => {
                       setImageContent(null);
                       setImageName(null);
-                      if (fileInputRef.current) fileInputRef.current.value = '';
+                      if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
                     className="text-sm text-destructive hover:underline"
                   >
@@ -207,9 +220,10 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
           w-full py-3 px-4 rounded-lg font-medium text-sm
           flex items-center justify-center gap-2
           transition-all duration-150
-          ${isSubmitDisabled || isLoading
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-primary text-primary-foreground hover:opacity-90'
+          ${
+            isSubmitDisabled || isLoading
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:opacity-90"
           }
         `}
       >
@@ -219,50 +233,48 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
             Generating code...
           </>
         ) : (
-          'Generate Share Code'
+          "Generate Share Code"
         )}
       </button>
 
       {/* Generated Code Display */}
-      {/* Quick Retrieve Section */}
-      <QuickRetrieve onToast={onToast} />
-
       {generatedCode && (
-        <div className="mt-6 p-5 bg-card rounded-xl border border-border animate-fade-in">
-          <p className="text-sm text-muted-foreground mb-3 text-center">
-            Your sharing code
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex gap-2">
-              {generatedCode.split('').map((digit, i) => (
-                <div
-                  key={i}
-                  className="w-12 h-14 flex items-center justify-center bg-muted rounded-lg text-2xl font-semibold"
-                >
-                  {digit}
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={handleCopyCode}
-              className="p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors duration-150"
-              title="Copy code"
-            >
-              {isCopied ? (
-                <Check className="w-5 h-5 text-success" />
-              ) : (
-                <Copy className="w-5 h-5 text-muted-foreground" />
-              )}
-            </button>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 py-2">
+          <span className="text-sm text-muted-foreground">
+            Your sharing code:
+          </span>
+          <span className="flex gap-1">
+            {generatedCode.split("").map((digit, i) => (
+              <span
+                key={i}
+                className="px-2 py-1 text-sm font-semibold rounded bg-muted"
+              >
+                {digit}
+              </span>
+            ))}
+          </span>
+          <button
+            onClick={handleCopyCode}
+            className="p-1.5 rounded hover:bg-muted transition-colors"
+            title="Copy"
+          >
+            {isCopied ? (
+              <Check className="w-4 h-4 text-green-600" />
+            ) : (
+              <Copy className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
           <button
             onClick={handleReset}
-            className="w-full mt-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Share something else
+            Reset
           </button>
         </div>
       )}
+
+      {/* Quick Retrieve Section */}
+      <QuickRetrieve onToast={onToast} />
     </div>
   );
 };
