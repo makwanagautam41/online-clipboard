@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, X } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { CheckCircle, XCircle, X } from "lucide-react";
 
 export interface ToastData {
   id: string;
-  type: 'success' | 'error';
+  type: "success" | "error";
   message: string;
 }
 
@@ -56,7 +56,8 @@ export const Toast = ({ toast, onDismiss }: ToastProps) => {
       className={`
         flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border
         bg-card text-card-foreground border-border
-        ${isExiting ? 'animate-slide-up' : 'animate-slide-down'}
+        w-full min-w-0
+        ${isExiting ? "animate-slide-up" : "animate-slide-down"}
         transition-transform duration-150 ease-out
       `}
       style={{ transform: `translateY(${translateY}px)` }}
@@ -64,15 +65,17 @@ export const Toast = ({ toast, onDismiss }: ToastProps) => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {toast.type === 'success' ? (
+      {toast.type === "success" ? (
         <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
       ) : (
         <XCircle className="w-5 h-5 text-destructive flex-shrink-0" />
       )}
-      <span className="text-sm font-medium">{toast.message}</span>
+      <span className="text-sm font-medium flex-1 min-w-0 break-words">
+        {toast.message}
+      </span>
       <button
         onClick={handleDismiss}
-        className="ml-2 p-1 rounded-md hover:bg-muted transition-colors duration-150"
+        className="p-1 rounded-md hover:bg-muted transition-colors duration-150 flex-shrink-0"
       >
         <X className="w-4 h-4 text-muted-foreground" />
       </button>
@@ -87,10 +90,12 @@ interface ToastContainerProps {
 
 export const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2">
-      {toasts.map((toast) => (
-        <Toast key={toast.id} toast={toast} onDismiss={onDismiss} />
-      ))}
+    <div className="fixed top-4 sm:top-6 left-0 right-0 px-4 sm:px-6 z-50 flex flex-col gap-2 pointer-events-none">
+      <div className="w-full max-w-md mx-auto pointer-events-auto">
+        {toasts.map((toast) => (
+          <Toast key={toast.id} toast={toast} onDismiss={onDismiss} />
+        ))}
+      </div>
     </div>
   );
 };
