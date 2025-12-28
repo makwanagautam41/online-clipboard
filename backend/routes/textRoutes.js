@@ -1,78 +1,76 @@
 const express = require("express");
 const Clipboard = require("../models/Clipboard");
-const See = require("../models/See.js");
+const See = require("../models/See");
+const redis = require("../config/redis");
+
 const router = express.Router();
 
-// Ensure index on code for faster queries
 Clipboard.collection.createIndex({ code: 1 }, { unique: true });
 
-// In-memory cache to reduce redundant DB checks
-const usedCodes = new Set();
-
-// Generate Unique 4-digit Code Efficiently
-const generateUniqueCode = async () => {
+const generateCode = async () => {
   let code;
-  do {
-    code = Math.floor(1000 + Math.random() * 9000).toString();
-  } while (usedCodes.has(code) || (await Clipboard.exists({ code })));
+  let exists = true;
 
-  usedCodes.add(code);
-  setTimeout(() => usedCodes.delete(code), 600000); // Clear cache after 10 mins
+  while (exists) {
+    code = Math.floor(1000 + Math.random() * 9000).toString();
+    exists = await redis.exists(`clipboard:${code}`);
+  }
 
   return code;
 };
 
-// Save Clipboard Text
 router.post("/save-text", async (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: "Text is required" });
 
-  const code = await generateUniqueCode();
+  const code = await generateCode();
 
-  Clipboard.create({ text, code }) // Non-blocking save
-    .then(() => res.json({ message: "Text saved successfully", code }))
-    .catch(() => res.status(500).json({ error: "Failed to save text" }));
+  await redis.set(`clipboard:${code}`, text, "EX", 900);
+
+  Clipboard.create({ text, code }).catch(() => {});
+
+  res.json({ message: "Text saved successfully", code });
 });
 
-// Retrieve Clipboard Text
 router.get("/retrieve-text/:code", async (req, res) => {
   const { code } = req.params;
-  const clip = await Clipboard.findOne({ code }).lean(); 
 
+  const cached = await redis.get(`clipboard:${code}`);
+  if (cached) return res.json({ text: cached });
+
+  const clip = await Clipboard.findOne({ code }).lean();
   if (!clip) return res.status(404).json({ error: "Invalid or expired code" });
+
+  await redis.set(`clipboard:${code}`, clip.text, "EX", 900);
 
   res.json({ text: clip.text });
 });
 
-router.post("/save-long-data", async(req,res)=>{
-  const {text, label} = req.body;
-  if(!text && !label) return res.status(400).json({error:"Text or Label required"});
+router.post("/save-long-data", async (req, res) => {
+  const { text, label } = req.body;
+  if (!text || !label)
+    return res.status(400).json({ error: "Text and Label required" });
 
-  See.create({text,label})
-    .then(()=> res.json({message:"Text Saved Successfully"}))
-    .catch(()=> res.json(500).json({error:"Failed to save text"}))
-})
+  await redis.set(`long:${label}`, text);
+
+  See.create({ text, label }).catch(() => {});
+
+  res.json({ message: "Text Saved Successfully" });
+});
 
 router.get("/get-long-data", async (req, res) => {
   const { label } = req.query;
+  if (!label) return res.status(400).json({ error: "Label is required" });
 
-  if (!label) {
-    return res.status(400).json({ error: "Label is required" });
-  }
+  const cached = await redis.get(`long:${label}`);
+  if (cached) return res.json({ data: cached });
 
-  try {
-    const data = await See.findOne({ label }).select('text').lean();
+  const data = await See.findOne({ label }).select("text").lean();
+  if (!data) return res.status(404).json({ error: "No data found" });
 
-    if (!data) {
-      return res.status(404).json({ error: "No data found" });
-    }
+  await redis.set(`long:${label}`, data.text);
 
-    return res.json({ data: data.text });
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch data" });
-  }
+  res.json({ data: data.text });
 });
-
-
 
 module.exports = router;
