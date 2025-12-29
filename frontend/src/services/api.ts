@@ -88,7 +88,7 @@
 // };
 
 // ================= BASE URLS =================
-const TEXT_API_BASE_URL = "http://aws.gautamsareechotila.shop/api";
+const TEXT_API_BASE_URL = "https://aws.gautamsareechotila.shop/api";
 const IMAGE_API_BASE_URL = "https://server-online-clipboard.vercel.app/api";
 
 // ================= TYPES =================
