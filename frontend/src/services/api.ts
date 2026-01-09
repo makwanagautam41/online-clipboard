@@ -87,86 +87,78 @@
 //   return data.imageUrl;
 // };
 
-// ================= BASE URLS =================
-const TEXT_API_BASE_URL = "https://aws.gautamsareechotila.shop/api";
-const IMAGE_API_BASE_URL = "https://server-online-clipboard.vercel.app/api";
-
-// ================= TYPES =================
-export interface SaveTextResponse {
-  code: string;
-}
-
-export interface RetrieveTextResponse {
-  text: string;
-}
-
-export interface UploadImageResponse {
-  code: string;
-  imageUrl: string;
-}
-
-export interface RetrieveImageResponse {
-  imageUrl: string;
-}
-
-// ================= TEXT APIs (AWS) =================
+const TEXT_API_BASE_URL = "https://aws.gautamsareechotila.shop";
+const IMAGE_API_BASE_URL = "https://server-online-clipboard.vercel.app";
 
 // Save text
-export const saveText = async (text: string): Promise<string> => {
-  const response = await fetch(`${TEXT_API_BASE_URL}/save-text`, {
+export const saveText = async (text) => {
+  const response = await fetch(`${TEXT_API_BASE_URL}/api/save-text`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ text }),
   });
 
-  if (!response.ok) throw new Error("Failed to save text");
+  if (!response.ok) {
+    throw new Error("Failed to save text");
+  }
 
-  const data: SaveTextResponse = await response.json();
+  const data = await response.json();
   return data.code;
 };
 
 // Retrieve text
-export const retrieveText = async (code: string): Promise<string> => {
-  const response = await fetch(`${TEXT_API_BASE_URL}/retrieve-text/${code}`);
+export const retrieveText = async (code) => {
+  const response = await fetch(
+    `${TEXT_API_BASE_URL}/api/retrieve-text/${code}`
+  );
 
   if (!response.ok) {
-    if (response.status === 404) throw new Error("Code not found");
+    if (response.status === 404) {
+      throw new Error("Code not found");
+    }
     throw new Error("Failed to retrieve text");
   }
 
-  const data: RetrieveTextResponse = await response.json();
+  const data = await response.json();
   return data.text;
 };
 
-// ================= IMAGE APIs (VERCEL) =================
-
 // Upload image
-export const uploadImage = async (
-  file: File
-): Promise<{ code: string; imageUrl: string }> => {
+export const uploadImage = async (file) => {
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await fetch(`${IMAGE_API_BASE_URL}/upload-image`, {
+  const response = await fetch(`${IMAGE_API_BASE_URL}/api/upload-image`, {
     method: "POST",
     body: formData,
   });
 
-  if (!response.ok) throw new Error("Failed to upload image");
+  if (!response.ok) {
+    throw new Error("Failed to upload image");
+  }
 
-  const data: UploadImageResponse = await response.json();
-  return { code: data.code, imageUrl: data.imageUrl };
+  const data = await response.json();
+  return {
+    code: data.code,
+    imageUrl: data.imageUrl,
+  };
 };
 
 // Retrieve image
-export const retrieveImage = async (code: string): Promise<string> => {
-  const response = await fetch(`${IMAGE_API_BASE_URL}/retrieve-image/${code}`);
+export const retrieveImage = async (code) => {
+  const response = await fetch(
+    `${IMAGE_API_BASE_URL}/api/retrieve-image/${code}`
+  );
 
   if (!response.ok) {
-    if (response.status === 404) throw new Error("Code not found");
+    if (response.status === 404) {
+      throw new Error("Code not found");
+    }
     throw new Error("Failed to retrieve image");
   }
 
-  const data: RetrieveImageResponse = await response.json();
+  const data = await response.json();
   return data.imageUrl;
 };
