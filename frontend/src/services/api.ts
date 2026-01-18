@@ -111,7 +111,7 @@ export const saveText = async (text) => {
 // Retrieve text
 export const retrieveText = async (code) => {
   const response = await fetch(
-    `${TEXT_API_BASE_URL}/api/retrieve-text/${code}`
+    `${TEXT_API_BASE_URL}/api/retrieve-text/${code}`,
   );
 
   if (!response.ok) {
@@ -149,7 +149,7 @@ export const uploadImage = async (file) => {
 // Retrieve image
 export const retrieveImage = async (code) => {
   const response = await fetch(
-    `${IMAGE_API_BASE_URL}/api/retrieve-image/${code}`
+    `${IMAGE_API_BASE_URL}/api/retrieve-image/${code}`,
   );
 
   if (!response.ok) {

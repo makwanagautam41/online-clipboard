@@ -71,7 +71,7 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
         code = result.code;
       }
 
-      setGeneratedCode(code);
+      setGeneratedCode(String(code));
       onToast({ type: "success", message: "Content shared successfully!" });
     } catch (error) {
       onToast({
