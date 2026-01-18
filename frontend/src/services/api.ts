@@ -162,3 +162,14 @@ export const retrieveImage = async (code) => {
   const data = await response.json();
   return data.imageUrl;
 };
+
+export const health = async () => {
+  const response = await fetch(`${TEXT_API_BASE_URL}/api/health`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch health data");
+  }
+
+  const data = await response.json();
+  return data;
+};
