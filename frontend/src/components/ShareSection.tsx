@@ -24,6 +24,7 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
   const [imageName, setImageName] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [requestTimeMs, setRequestTimeMs] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +58,9 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
   const handleSubmit = async () => {
     setIsLoading(true);
     setGeneratedCode(null);
+    setRequestTimeMs(null);
+
+    const startTime = performance.now();
 
     try {
       let code: string;
@@ -64,16 +68,18 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
       if (activeTab === "text") {
         code = await saveText(textContent);
       } else {
-        if (!imageFile) {
-          throw new Error("No image file selected");
-        }
+        if (!imageFile) throw new Error("No image file selected");
         const result = await uploadImage(imageFile);
         code = result.code;
       }
 
+      const endTime = performance.now();
+
       setGeneratedCode(String(code));
+      setRequestTimeMs(Math.round(endTime - startTime));
+
       onToast({ type: "success", message: "Content shared successfully!" });
-    } catch (error) {
+    } catch {
       onToast({
         type: "error",
         message: "Failed to share content. Please try again.",
@@ -102,6 +108,7 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
     setImageName(null);
     setImageFile(null);
     setGeneratedCode(null);
+    setRequestTimeMs(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -118,51 +125,48 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
           onClick={() => {
             setActiveTab("text");
             setGeneratedCode(null);
+            setRequestTimeMs(null);
           }}
-          className={`
-            flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md
-            text-sm font-medium transition-all duration-150
-            ${
-              activeTab === "text"
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }
-          `}
+          className={`flex-1 py-2.5 rounded-md text-sm font-medium ${
+            activeTab === "text"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
         >
-          <FileText className="w-4 h-4" />
+          <FileText className="w-4 h-4 inline mr-2" />
           Text
         </button>
         <button
           onClick={() => {
             setActiveTab("image");
             setGeneratedCode(null);
+            setRequestTimeMs(null);
           }}
-          className={`
-            flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md
-            text-sm font-medium transition-all duration-150
-            ${
-              activeTab === "image"
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }
-          `}
+          className={`flex-1 py-2.5 rounded-md text-sm font-medium ${
+            activeTab === "image"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
         >
-          <ImageIcon className="w-4 h-4" />
+          <ImageIcon className="w-4 h-4 inline mr-2" />
           Image
         </button>
       </div>
 
-      {/* Content Area */}
+      {/* Content */}
       <div className="bg-card rounded-xl border border-border p-5 mb-6">
         {activeTab === "text" ? (
           <textarea
             value={textContent}
             onChange={(e) => setTextContent(e.target.value)}
             placeholder="Paste or type your text here..."
-            className="w-full h-40 bg-transparent resize-none text-sm placeholder:text-muted-foreground focus:outline-none"
+            className="w-full h-40 bg-transparent resize-none text-sm focus:outline-none"
           />
         ) : (
-          <div>
+          <label
+            htmlFor="image-upload"
+            className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg cursor-pointer"
+          >
             <input
               ref={fileInputRef}
               type="file"
@@ -171,109 +175,65 @@ export const ShareSection = ({ onToast }: ShareSectionProps) => {
               className="hidden"
               id="image-upload"
             />
-            {imageContent ? (
-              <div className="space-y-3">
-                <img
-                  src={imageContent}
-                  alt="Preview"
-                  className="max-h-48 rounded-lg mx-auto object-contain"
-                />
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground truncate max-w-[200px]">
-                    {imageName}
-                  </span>
-                  <button
-                    onClick={() => {
-                      setImageContent(null);
-                      setImageName(null);
-                      if (fileInputRef.current) fileInputRef.current.value = "";
-                    }}
-                    className="text-sm text-destructive hover:underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <label
-                htmlFor="image-upload"
-                className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors duration-150"
-              >
-                <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">
-                  Click to upload an image
-                </span>
-                <span className="text-xs text-muted-foreground mt-1">
-                  Max 5MB
-                </span>
-              </label>
-            )}
-          </div>
+            <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+            <span className="text-sm text-muted-foreground">
+              Click to upload an image
+            </span>
+          </label>
         )}
       </div>
 
-      {/* Submit Button */}
+      {/* Submit */}
       <button
         onClick={handleSubmit}
         disabled={isSubmitDisabled || isLoading}
-        className={`
-          w-full py-3 px-4 rounded-lg font-medium text-sm
-          flex items-center justify-center gap-2
-          transition-all duration-150
-          ${
-            isSubmitDisabled || isLoading
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary text-primary-foreground hover:opacity-90"
-          }
-        `}
+        className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
       >
         {isLoading ? (
-          <>
+          <span className="flex justify-center items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Generating code...
-          </>
+            Generating code…
+          </span>
         ) : (
           "Generate Share Code"
         )}
       </button>
 
-      {/* Generated Code Display */}
+      {/* Generated Code */}
       {generatedCode && (
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 py-2">
-          <span className="text-sm text-muted-foreground">
-            Your sharing code:
-          </span>
-          <span className="flex gap-1">
-            {generatedCode.split("").map((digit, i) => (
+        <div className="mt-4">
+          <div className="flex items-center gap-2">
+            {generatedCode.split("").map((d, i) => (
               <span
                 key={i}
                 className="px-2 py-1 text-sm font-semibold rounded bg-muted"
               >
-                {digit}
+                {d}
               </span>
             ))}
-          </span>
-          <button
-            onClick={handleCopyCode}
-            className="p-1.5 rounded hover:bg-muted transition-colors"
-            title="Copy"
-          >
-            {isCopied ? (
-              <Check className="w-4 h-4 text-green-600" />
-            ) : (
-              <Copy className="w-4 h-4 text-muted-foreground" />
-            )}
-          </button>
-          <button
-            onClick={handleReset}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Reset
-          </button>
+            <button onClick={handleCopyCode} className="ml-2">
+              {isCopied ? (
+                <Check className="w-4 h-4 text-green-600" />
+              ) : (
+                <Copy className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            <button
+              onClick={handleReset}
+              className="text-sm text-muted-foreground ml-2"
+            >
+              Reset
+            </button>
+          </div>
+
+          {requestTimeMs !== null && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Completed in {requestTimeMs} ms
+            </p>
+          )}
         </div>
       )}
 
-      {/* Quick Retrieve Section */}
       <QuickRetrieve onToast={onToast} />
     </div>
   );
